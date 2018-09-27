@@ -2,92 +2,87 @@
 /**
 *Plugin Name: Simple Contact Form
 *Description: An extremely simple plugin for contact form with email facility.
+*Author: Bennet Rio Chettiar
+*Author URI: https://www.linkedin.com/in/bennet-rio-chettiar-a9126b76/
+*Version: 1.0.0
 **/
 
-function simplecontact_example_function()
-{
-    $information = "This is a very basic plugin";
-    return $information;
-}
-add_shortcode('example','simplecontact_example_function');
 
-function simplecontact_admin_menu_option()
+function simplecontactform_admin_menu_option()
 {
-    add_menu_page('Header & Footer Scripts','Site Scripts','manage_options','simpleplugin-admin-menu','simplecontact_scripts_page','','200');
+    add_menu_page('SIMPLE CONTACT FORM','Simple Contact Form','manage_options','simplecontact-admin-menu','simplecontactform_page','','200');
 }
-add_action('admin_menu','simplecontact_admin_menu_option');
+add_action('admin_menu','simplecontactform_admin_menu_option');
 
-function simplecontact_scripts_page()
+
+function simplecontactform_page()
 {
-    if(array_key_exists('submit_scripts_update',$_POST))
+    if(array_key_exists('submit_update',$_POST))
     {
-        update_option('simplecontact_header_scripts',$_POST['header_scripts']);
-        update_option('simplecontact_footer_scripts',$_POST['footer_scripts']);
+        update_option('simplecontactform_scripts',$_POST['email_address']);
         
         ?>
         
-        <div id="setting-error-settings_updated" class="updated settings-error notice is-dismissible"><strong>Settings have been saved</strong></div>
+        <div id="setting-error-settings_updated" class="updated settings-error notice is-dismissible"><strong>Email ID has been updated with <?php echo $_POST['email_address'] ?></strong></div>
         
         <?php
     }
     
-    $header_scripts = get_option('simplecontact_header_scripts','none');
-    $footer_scripts = get_option('simplecontact_footer_scripts','none');
-    
     
     ?>
     <div class="wrap">
-        <h4>Update scripts on the header and footer</h4>
+        <h3>Please update the email address where you want the form details to be sent to.</h3>
         <form method="post" action="">
-        <label for="header_scripts">Header Scripts</label>
-        <textarea name="header_scripts" class="large-text"><?php echo $header_scripts; ?></textarea>
-        <label for="header_scripts">Footer Scripts</label>
-        <textarea name="footer_scripts" class="large-text"><?php echo $footer_scripts; ?></textarea>
-        <input type="submit" name="submit_scripts_update" class="button button-primary" value="UPDATE SCRIPTS">
+        <label for="send_email">Send Email To</label>
+        <input type="text" name="email_address" value="" placeholder="bennetrio.chettiar@my.jcu.edu.au" style="min-width:300px;"/>
+        <input type="submit" name="submit_update" class="button button-primary" value="UPDATE EMAIL">
         </form>
     </div>
     <?php
 }
 
-function simplecontact_display_header_scripts()
-{
-    $header_scripts = get_option('simplecontact_header_scripts','none');
-    echo $header_scripts;
-}
-add_action('wp_head','simplecontact_display_header_scripts');
 
-function simpleplugin_display_footer_scripts()
-{
-    $footer_scripts = get_option('simplecontact_footer_scripts','none');
-    echo $footer_scripts;
-}
-add_action('wp_footer','simplecontact_display_footer_scripts');
 
 function simplecontact_form()
 {
+
+
     $content = '';
-    $content .= '<form method="post" action="http://localhost/wordpress_1/thank-you/">';
+    $content .= '<form method="post" action="">';
     
-    $content .= '<input type="text" name="full_name" placeholder="Your Full Name"/>';
-    $content .= '<br/>';
+    $content .= '<input type="text" name="full_name" placeholder="Your Full Name" style="max-width:300px;" required/>';
+    $content .= '<br/><br/>';
     
-    $content .= '<input type="text" name="email_address" placeholder="Email Address"/>';
-    $content .= '<br/>';
+    $content .= '<input type="text" name="email_address" placeholder="Email Address" style="max-width:300px;" required/>';
+    $content .= '<br/><br/>';
     
-    $content .= '<input type="text" name="phone_number" placeholder="Phone Number"/>';
-    $content .= '<br/>';
+    $content .= '<input type="text" name="phone_number" placeholder="Phone Number" style="max-width:300px;"/>';
+    $content .= '<br/><br/>';
     
-    $content .= '<textarea name="comments" placeholder="Comments"></textarea>';
-    $content .= '<br/>';
+    $content .= '<textarea name="comments" placeholder="Comments" style="max-width:300px;"></textarea>';
+    $content .= '<br/><br/>';
     
     $content .= '<input type="submit" name="simplecontact_submit_form" value="Submit"/>';
-    $content .= '<br/>';
+    $content .= '<br/><br/>';
     
     $content .= '</form>';
     
+    
+
+   if(array_key_exists('simplecontact_submit_form',$_POST))
+    { ?>
+     <div><strong>Message Received.</strong></div> 
+    <?php
+    }
+
     return $content;
+
 }
 add_shortcode('simplecontactform','simplecontact_form');
+
+
+
+
 
 
 function set_html_content_type()
@@ -97,12 +92,14 @@ function set_html_content_type()
 
 
 
+
 function simplecontact_form_capture()
 {
     global $post;
     if(array_key_exists('simplecontact_submit_form',$_POST))
     {
-        $to = "bennetchettiar@gmail.com";
+        
+        $to = get_option('simplecontactform_scripts','none');
         $subject = "Form Submission";
         $body = '';
         
@@ -123,7 +120,7 @@ function simplecontact_form_capture()
             'comment_content' => $body,
             'comment_author_IP' => $_SERVER['REMOTE_ADDR'],
             'comment_date' => $time,
-            'comment_approved' => 1,
+            'comment_approved' => 0,
         );
 
         wp_insert_comment($data);
